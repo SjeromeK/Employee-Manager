@@ -6,6 +6,11 @@ const Manager = require("./lib/Manager");
 const Intern = require("./lib/Intern");
 const Engineer = require("./lib/Engineer");
 
+const OUTPUT_DIR = path.resolve(__dirname, "output");
+const outputPath = path.join(OUTPUT_DIR, "team.html")
+
+const render = require("./lib/htmlRenderer");
+
 const teamArray = [];
 
 
@@ -88,7 +93,7 @@ function createTeam() {
                 addIntern();
                 break;
             default:
-            // code block
+                buildTeam();
         }
     })
 }
@@ -141,11 +146,13 @@ function addEngineer() {
                 } 
                 return "Please enter your github";
             }
-        }
+        },
+
 
     ]).then(answers => {
         const engineer = new Engineer(answers.engineerName,answers.engineerId, answers.engineerEmail,answers.engineerGithub);
-        teamArray.push(engineer)
+        teamArray.push(engineer);
+        addAnother();
     })
 } 
 function addIntern() {
@@ -200,8 +207,31 @@ function addIntern() {
 
     ]).then(answers => {
         const intern = new Intern(answers.internName,answers.internId, answers.internEmail,answers.internSchool);
-        teamArray.push(intern)
+        teamArray.push(intern);
+        addAnother();
     })
 } 
+function addAnother() {
+    inquirer.prompt([
+        {
+            type: "confirm",
+            message: "Would you like to add another employee",
+            name: "another"
+        }
+    ]).then(response => {
+        if(response.another) {
+            createTeam();
+        } else{
+            buildTeam();
+            console.log(teamArray)
+        }
+    })
+}
 
+function buildTeam() {
+    if(!fs.existsSync(OUTPUT_DIR)) {
+        fs.mkdirSync(OUTPUT_DIR);
+    }
+    fs.writeFileSync(outputPath, render(teamArray), "utf-8")
+}
 createManager();
